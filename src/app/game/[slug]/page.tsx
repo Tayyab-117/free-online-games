@@ -1,67 +1,51 @@
-import { bySlug, related } from "@/lib/games";
-import Image from "next/image";
+"use client";
+
+import { useParams } from "next/navigation";
 import Script from "next/script";
-import GameCard from "@/components/GameCard";
-import RecentClient from "./recent-client";
+import games from "@/data/games.json";
 
-type Props = { params: { slug: string } };
+export default function GamePage() {
+  const params = useParams();
+  const game = games.find((g) => g.slug === params.slug);
 
-export async function generateMetadata({ params }: Props) {
-  const g = bySlug(params.slug);
-  return {
-    title: g ? `${g.title} – Play Free Online` : "Game",
-    description: g?.description ?? "",
-    openGraph: { images: [g?.thumb ?? "/og-cover.svg"] }
-  };
-}
+  if (!game) {
+    return <div>Game not found.</div>;
+  }
 
-export default function GamePage({ params }: Props) {
-  const g = bySlug(params.slug);
-  if (!g) return <div className="py-24 text-center">Game not found.</div>;
-  const rel = related(g.slug, 6);
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "VideoGame",
-    "name": g.title,
-    "genre": g.category,
-    "operatingSystem": "Web Browser",
-    "applicationCategory": "Game",
-    "playMode": "SinglePlayer",
-    "applicationSubCategory": "HTML5 Game",
-    "description": g.description,
-    "thumbnailUrl": g.thumb,
-    "image": g.hero ?? g.thumb,
-    "url": `https://freegames.example.com/game/${g.slug}`,
-    "inLanguage": "en"
+    name: game.title,
+    description: game.description,
+    genre: game.genre,
+    inLanguage: "en"
   };
+
   return (
     <div className="space-y-8">
-      <Script type="application/ld+json" id="game-jsonld" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      {/* SEO JSON-LD Structured Data */}
+      <Script
+        type="application/ld+json"
+        id="game-jsonld"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      {/* Game container */}
       <div className="rounded-xl bg-panel overflow-hidden shadow-card">
         <div className="relative w-full aspect-video">
           <iframe
-            src={g.embed}
-            className="w-full h-full"
-            allow="autoplay; fullscreen; gamepad; clipboard-write"
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            / className="w-full h-[80vh] border-none">
-        </div>
-        <div className="p-4 text-slate-300 text-sm">
-          <h1 className="text-2xl font-bold text-white">{g.title}</h1>
-          <p className="mt-2">{g.description}</p>
-          <p className="mt-2">Category: {g.category}</p>
+            src={`/games/${params.slug}/index.html`}
+            className="w-full h-[80vh] border-none"
+            title={game.title}
+          ></iframe>
         </div>
       </div>
-      <RecentClient slug={g.slug} />
-      {rel.length > 0 && (
-        <section>
-          <h2 className="text-2xl font-bold mb-3">Related games</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-            {rel.map(r => <GameCard key={r.id} g={r}/>)}
-          </div>
-        </section>
-      )}
+
+      {/* Game description */}
+      <div className="bg-panel rounded-xl p-4 shadow-card">
+        <h1 className="text-2xl font-bold mb-2">{game.title}</h1>
+        <p className="text-slate-300">{game.description}</p>
+      </div>
     </div>
   );
 }
