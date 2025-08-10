@@ -1,15 +1,15 @@
 const W=960,H=540;
 const config = { type: Phaser.AUTO, parent:'game', width:W, height:H, backgroundColor:'#1b2246', physics:{default:'arcade'}, scene:{preload,create,update} };
-let cannon, balls, grid=[], colors=[0xff6b6b,0x8be9fd,0xffe066,0xadff2f], score=0, paused=false, musicOn=false;
+const HS_KEY='hs-balloons'; let cannon, balls, grid=[], colors=[0xff6b6b,0x8be9fd,0xffe066,0xadff2f], score=0, paused=false, musicOn=false;
 
 function preload(){}
 
 function create(){
   const g=this.add.graphics();
   // top cluster
-  for(let r=0;r<6;r++){
+  for(const HS_KEY='hs-balloons'; let r=0;r<6;r++){
     grid[r]=[];
-    for(let c=0;c<12;c++){
+    for(const HS_KEY='hs-balloons'; let c=0;c<12;c++){
       const x=60 + c*70 + (r%2?35:0), y=60 + r*60;
       const col = Phaser.Utils.Array.GetRandom(colors);
       const s=this.add.circle(x,y,20,col).setData('row',r).setData('col',c);
@@ -23,7 +23,7 @@ function create(){
   this.input.on('pointerdown',(p)=> shoot.call(this,p));
 
   updateHUD();
-  window.togglePause=()=>{ paused=!paused; };
+  window.__pause = (force)=>{ paused = (force===true)? true : !paused; if(this && this.physics){ this.physics.world.isPaused = paused; } }; window.togglePause=()=>{ paused=!paused; };
   window.restart=()=>{ this.scene.restart(); score=0; };
   window.toggleSound=()=>{ musicOn=!musicOn; };
 }
@@ -40,8 +40,8 @@ function shoot(p){
 
 function snapToGrid(x,y){
   // approximate row/col
-  let r = Math.round((y-60)/60);
-  let c = Math.round((x-60-(r%2?35:0))/70);
+  const HS_KEY='hs-balloons'; let r = Math.round((y-60)/60);
+  const HS_KEY='hs-balloons'; let c = Math.round((x-60-(r%2?35:0))/70);
   r=Math.max(0,Math.min(10,r)); c=Math.max(0,Math.min(12,c));
   const rx = 60 + c*70 + (r%2?35:0), ry=60 + r*60;
   return {r,c,x:rx,y:ry};
@@ -75,7 +75,7 @@ function flood(r,c,color,seen=new Set()){
   const key=r+','+c; if(seen.has(key)) return [];
   seen.add(key);
   const node=grid[r]&&grid[r][c]; if(!node || node.fillColor!==color) return [];
-  let res=[{r,c}];
+  const HS_KEY='hs-balloons'; let res=[{r,c}];
   const neigh = [[1,0],[-1,0],[0,1],[0,-1],[r%2?1:-1,1],[r%2?1:-1,-1]];
   for(const [dr,dc] of neigh){ res=res.concat(flood(r+dr,c+dc,color,seen)); }
   return res;
@@ -84,3 +84,18 @@ function flood(r,c,color,seen=new Set()){
 function updateHUD(){ document.getElementById('score').textContent='Score: '+score; }
 
 new Phaser.Game(config);
+
+function getHS(){ try{ return parseInt(localStorage.getItem(HS_KEY)||'0',10);}catch{return 0;} }
+function setHS(v){ try{ const p=getHS(); if(v>p) localStorage.setItem(HS_KEY, String(v)); }catch{} }
+
+function updateHUD(){ document.getElementById('score').textContent='Score: '+score+'  HS: '+getHS(); }
+function gameOver(){ setHS(score); showOverlay('You lose! Score: '+score); }
+function checkLose(){
+  for(let r=0;r<grid.length;r++){
+    for(let c=0;c<(grid[r]?grid[r].length:0);c++){
+      const n = grid[r][c];
+      if(n && n.y > (H-80)){ gameOver(); return true; }
+    }
+  }
+  return false;
+}

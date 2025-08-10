@@ -1,6 +1,6 @@
 const W=960,H=540;
 const config={ type: Phaser.AUTO, parent:'game', width:W, height:H, backgroundColor:'#1b2246', physics:{default:'arcade'}, scene:{preload,create,update} };
-let car, cursors, obstacles, lap=0, totalTime=0, startLap=0, paused=false;
+const HS_KEY='hs-racer'; let car, cursors, obstacles, lap=0, totalTime=0, startLap=0, paused=false;
 
 function preload(){}
 
@@ -11,7 +11,7 @@ function create(){
   cursors=this.input.keyboard.createCursorKeys();
   obstacles=this.physics.add.group();
 
-  for(let i=0;i<8;i++){
+  for(const HS_KEY='hs-racer'; let i=0;i<8;i++){
     const x=Phaser.Math.Between(W/2-250, W/2+250);
     const y=Phaser.Math.Between(80,H-200);
     const obs=this.physics.add.rectangle(x,y, 30, 30, 0xff6b6b); obstacles.add(obs);
@@ -20,7 +20,7 @@ function create(){
 
   startLap=this.time.now;
   updateHUD();
-  window.togglePause=()=>{ paused=!paused; this.physics.world.isPaused=paused; };
+  window.__pause = (force)=>{ paused = (force===true)? true : !paused; if(this && this.physics){ this.physics.world.isPaused = paused; } }; window.togglePause=()=>{ paused=!paused; this.physics.world.isPaused=paused; };
   window.restart=()=>{ this.scene.restart(); lap=0; totalTime=0; };
   window.toggleSound=()=>{};
 }
@@ -51,3 +51,9 @@ function crash(){ alert('Crashed! Laps: '+lap+' Total: '+totalTime.toFixed(2)+'s
 function updateHUD(){ document.getElementById('score').textContent='Lap: '+lap+'  Total: '+totalTime.toFixed(2)+'s'; }
 
 new Phaser.Game(config);
+
+function getHS(){ try{ return parseInt(localStorage.getItem(HS_KEY)||'0',10);}catch{return 0;} }
+function setHS(v){ try{ const p=getHS(); if(v>p) localStorage.setItem(HS_KEY, String(v)); }catch{} }
+
+function updateHUD(){ document.getElementById('score').textContent='Lap: '+lap+'  Total: '+totalTime.toFixed(2)+'s  HS: '+getHS(); }
+function crash(){ setHS(Math.max(0,Math.floor(1000-totalTime))); showOverlay('Crashed! Laps: '+lap+' Total: '+totalTime.toFixed(2)+'s'); }

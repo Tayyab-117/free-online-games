@@ -2,6 +2,7 @@ import { bySlug, related } from "@/lib/games";
 import Image from "next/image";
 import Script from "next/script";
 import GameCard from "@/components/GameCard";
+import RecentClient from "./recent-client";
 
 type Props = { params: { slug: string } };
 
@@ -51,6 +52,7 @@ export default function GamePage({ params }: Props) {
           <p className="mt-2">Category: {g.category}</p>
         </div>
       </div>
+      <RecentClient slug={g.slug} />
       {rel.length > 0 && (
         <section>
           <h2 className="text-2xl font-bold mb-3">Related games</h2>

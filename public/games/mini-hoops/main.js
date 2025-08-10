@@ -1,6 +1,6 @@
 const W=960,H=540;
 const config={ type: Phaser.AUTO, parent:'game', width:W, height:H, backgroundColor:'#1b2246', physics:{default:'arcade', arcade:{gravity:{y:1000}}}, scene:{preload,create,update} };
-let ball, rim, score=0, timeLeft=60, dragging=false, startPos=null, paused=false, timerEvt;
+const HS_KEY='hs-hoops'; let ball, rim, score=0, timeLeft=60, dragging=false, startPos=null, paused=false, timerEvt;
 
 function preload(){}
 
@@ -31,7 +31,7 @@ function create(){
 
   timerEvt = this.time.addEvent({ delay:1000, loop:true, callback:()=>{ if(!paused){ timeLeft--; updateHUD(); if(timeLeft<=0) gameOver.call(this); } } });
   updateHUD();
-  window.togglePause=()=>{ paused=!paused; this.physics.world.isPaused=paused; };
+  window.__pause = (force)=>{ paused = (force===true)? true : !paused; if(this && this.physics){ this.physics.world.isPaused = paused; } }; window.togglePause=()=>{ paused=!paused; this.physics.world.isPaused=paused; };
   window.restart=()=>{ this.scene.restart(); score=0; timeLeft=60; };
   window.toggleSound=()=>{};
 }
@@ -49,3 +49,19 @@ function gameOver(){ alert('Time up! Score: '+score); window.restart(); }
 function update(){}
 
 new Phaser.Game(config);
+
+function getHS(){ try{ return parseInt(localStorage.getItem(HS_KEY)||'0',10);}catch{return 0;} }
+function setHS(v){ try{ const p=getHS(); if(v>p) localStorage.setItem(HS_KEY, String(v)); }catch{} }
+
+let lastScoreAt = 0;
+function updateHUD(){
+  document.getElementById('score').textContent='Score: '+score+'  HS: '+getHS();
+  document.getElementById('timer').textContent='  Time: '+timeLeft+'s';
+}
+function scored(){
+  const now = performance.now();
+  if(now - lastScoreAt < 600) return;
+  lastScoreAt = now;
+  score+=2; updateHUD();
+}
+function gameOver(){ setHS(score); showOverlay('Time up! Score: '+score); }

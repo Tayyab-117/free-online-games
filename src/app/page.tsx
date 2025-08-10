@@ -1,5 +1,6 @@
 import { byTrending, games, categories } from "@/lib/games";
 import Hero from "@/components/Hero";
+import ContinueRail from "@/components/ContinueRail";
 import GameCard from "@/components/GameCard";
 
 export default function Home({ searchParams }: { searchParams: { q?: string; c?: string } }) {
@@ -20,6 +21,8 @@ export default function Home({ searchParams }: { searchParams: { q?: string; c?:
           {list.map(g => <GameCard key={g.id} g={g}/>)}
         </div>
       </section>
+
+      <ContinueRail/>
     </div>
   );
 }

@@ -3,7 +3,7 @@ const config = {
   physics: { default: 'arcade', arcade: { gravity: { y: 900 }, debug: false } },
   scene: { preload, create, update }
 };
-let player, cursors, platforms, coins, spikes, score=0, timeLeft=120, paused=false, musicOn=false, timerEvt;
+const HS_KEY='hs-knight'; let player, cursors, platforms, coins, spikes, score=0, timeLeft=120, paused=false, musicOn=false, timerEvt;
 
 function preload(){
   // Use simple graphics; no external assets
@@ -39,7 +39,7 @@ function create(){
 
   // coins
   coins = this.physics.add.group();
-  for (let i=0;i<10;i++){
+  for (const HS_KEY='hs-knight'; let i=0;i<10;i++){
     const x = 140 + i*80; const y = Phaser.Math.Between(150, 420);
     const c = this.physics.add.sprite(x,y,null).setCircle(10);
     const cg = this.add.graphics(); cg.fillStyle(0xffe066); cg.fillCircle(0,0,10);
@@ -50,7 +50,7 @@ function create(){
 
   // spikes
   spikes = this.physics.add.group({ allowGravity:false, immovable:true });
-  for (let i=0;i<6;i++){
+  for (const HS_KEY='hs-knight'; let i=0;i<6;i++){
     const x = 200 + i*120; const s = this.physics.add.sprite(x, 500, null);
     const sg = this.add.graphics(); sg.fillStyle(0xff3b3b); sg.fillTriangle(-10,10, 10,10, 0,-10);
     s.setData('gfx', sg); s.preUpdate=function(){ this.getData('gfx').setPosition(this.x,this.y); };
@@ -68,7 +68,7 @@ function create(){
   timerEvt = this.time.addEvent({ delay:1000, loop:true, callback:()=>{ if(!paused){ timeLeft--; updateHUD(); if(timeLeft<=0) gameOver(); } } });
 
   updateHUD();
-  window.togglePause = ()=>{ paused=!paused; this.physics.world.isPaused = paused; };
+  window.__pause = (force)=>{ paused = (force===true)? true : !paused; if(this && this.physics){ this.physics.world.isPaused = paused; } }; window.togglePause = ()=>{ paused=!paused; this.physics.world.isPaused = paused; };
   window.restart = ()=>{ this.scene.restart(); score=0; timeLeft=120; };
   window.toggleSound = ()=>{ musicOn = !musicOn; };
 }
@@ -91,3 +91,18 @@ function gameOver(){ alert('Game Over! Score: '+score); restart(); }
 function win(){ score += 100; alert('You win! Score: '+score); restart(); }
 
 new Phaser.Game(config);
+
+function getHS(){ try{ return parseInt(localStorage.getItem(HS_KEY)||'0',10);}catch{return 0;} }
+function setHS(v){ try{ const p=getHS(); if(v>p) localStorage.setItem(HS_KEY, String(v)); }catch{} }
+
+// Hook score updates
+function updateHUD(){
+  document.getElementById('score').textContent = 'Score: ' + score + '  HS: ' + getHS();
+  document.getElementById('timer').textContent = '  Time: ' + timeLeft + 's';
+}
+function gameOver(){ setHS(score); showOverlay('Game Over! Score: '+score); }
+function win(){ score += 100; setHS(score); showOverlay('You win! Score: '+score); }
+// Mobile control read
+function mobileLeft(){ return window.__mobile && window.__mobile.left; }
+function mobileRight(){ return window.__mobile && window.__mobile.right; }
+function mobileUp(){ return window.__mobile && window.__mobile.up; }
