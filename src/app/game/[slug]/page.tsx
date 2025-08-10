@@ -45,7 +45,7 @@ export default function GamePage({ params }: Props) {
             allow="autoplay; fullscreen; gamepad; clipboard-write"
             loading="lazy"
             referrerPolicy="no-referrer"
-            />
+            / className="w-full h-[80vh] border-none">
         </div>
         <div className="p-4 text-slate-300 text-sm">
           <h1 className="text-2xl font-bold text-white">{g.title}</h1>
