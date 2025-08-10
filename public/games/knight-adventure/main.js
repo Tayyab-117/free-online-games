@@ -10,6 +10,7 @@ function preload(){
 }
 
 function create(){
+  window.__scene = this;
   // Camera & world
   this.cameras.main.setBackgroundColor('#1b2246');
 
@@ -68,7 +69,7 @@ function create(){
   timerEvt = this.time.addEvent({ delay:1000, loop:true, callback:()=>{ if(!paused){ timeLeft--; updateHUD(); if(timeLeft<=0) gameOver(); } } });
 
   updateHUD();
-  window.__pause = (force)=>{ paused = (force===true)? true : !paused; if(this && this.physics){ this.physics.world.isPaused = paused; } }; window.togglePause = ()=>{ paused=!paused; this.physics.world.isPaused = paused; };
+  window.__pause = (force)=>{ try{ paused = (force===true)? true : !paused; if(window.__scene && window.__scene.physics){ window.__scene.physics.world.isPaused = paused; } }catch(e){ console.warn('pause failed', e);} }; window.togglePause = ()=>{ paused=!paused; this.physics.world.isPaused = paused; };
   window.restart = ()=>{ this.scene.restart(); score=0; timeLeft=120; };
   window.toggleSound = ()=>{ musicOn = !musicOn; };
 }
@@ -90,7 +91,9 @@ function updateHUD(){
 function gameOver(){ alert('Game Over! Score: '+score); restart(); }
 function win(){ score += 100; alert('You win! Score: '+score); restart(); }
 
-new Phaser.Game(config);
+window._game && window._game.destroy(true);
+window._game = new Phaser.Game(config);
+window.addEventListener('beforeunload', ()=>{ try{ window._game && window._game.destroy(true); }catch{} });
 
 function getHS(){ try{ return parseInt(localStorage.getItem(HS_KEY)||'0',10);}catch{return 0;} }
 function setHS(v){ try{ const p=getHS(); if(v>p) localStorage.setItem(HS_KEY, String(v)); }catch{} }

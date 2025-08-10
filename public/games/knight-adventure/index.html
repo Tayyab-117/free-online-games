@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; connect-src 'self' data: blob:;">
+
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Knight Adventure - Free Games</title>
@@ -26,7 +28,7 @@
     <button onclick="restart()">Restart</button>
     <button onclick="toggleSound()">Sound</button>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.0/dist/phaser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.0/dist/phaser.min.js" crossorigin="anonymous"></script>
   <script src="./main.js"></script>
   <div class="mobile-controls" style="position:fixed;bottom:12px;left:12px;right:12px;display:flex;justify-content:space-between;gap:12px;z-index:20">
     <button id="btn-left" style="flex:1;background:#ffffff22;border:1px solid #ffffff33;color:#fff;border-radius:12px;padding:12px">◀</button>
@@ -43,5 +45,15 @@
     function showOverlay(msg){ var o=document.getElementById('overlay'); var t=document.getElementById('overlay-text'); t.textContent=msg; o.style.display='flex'; }
     function hideOverlay(){ var o=document.getElementById('overlay'); o.style.display='none'; }
   </script>
+<script>
+  window.addEventListener('error', function(e){ 
+    if(typeof showOverlay === 'function'){ showOverlay('Load error: ' + (e && e.message ? e.message : 'Unknown')); }
+    console.error('Game error:', e);
+  });
+  window.addEventListener('unhandledrejection', function(e){
+    if(typeof showOverlay === 'function'){ showOverlay('Runtime error'); }
+    console.error('Unhandled rejection:', e.reason || e);
+  });
+</script>
 </body>
 </html>

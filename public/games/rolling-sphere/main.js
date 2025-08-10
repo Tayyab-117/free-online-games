@@ -5,13 +5,14 @@ const HS_KEY='hs-sphere'; let player, obstacles, cursors, lane=1, lanes=[W/2-150
 function preload(){}
 
 function create(){
+  window.__scene = this;
   player=this.physics.add.circle(lanes[lane], H-80, 18, 0x8ab4ff); player.body.setImmovable(false);
   obstacles=this.physics.add.group();
   cursors=this.input.keyboard.createCursorKeys();
   this.physics.add.overlap(player, obstacles, hit, null, this);
   startTime = this.time.now;
   updateHUD();
-  window.__pause = (force)=>{ paused = (force===true)? true : !paused; if(this && this.physics){ this.physics.world.isPaused = paused; } }; window.togglePause=()=>{ paused=!paused; this.physics.world.isPaused=paused; };
+  window.__pause = (force)=>{ try{ paused = (force===true)? true : !paused; if(window.__scene && window.__scene.physics){ window.__scene.physics.world.isPaused = paused; } }catch(e){ console.warn('pause failed', e);} }; window.togglePause=()=>{ paused=!paused; this.physics.world.isPaused=paused; };
   window.restart=()=>{ this.scene.restart(); score=0; lane=1; speed=200; };
   window.toggleSound=()=>{};
 }
@@ -39,7 +40,9 @@ function update(time){
 function hit(){ alert('Crashed! Score: '+score); window.restart(); }
 function updateHUD(){ document.getElementById('score').textContent='Score: '+score; }
 
-new Phaser.Game(config);
+window._game && window._game.destroy(true);
+window._game = new Phaser.Game(config);
+window.addEventListener('beforeunload', ()=>{ try{ window._game && window._game.destroy(true); }catch{} });
 
 function getHS(){ try{ return parseInt(localStorage.getItem(HS_KEY)||'0',10);}catch{return 0;} }
 function setHS(v){ try{ const p=getHS(); if(v>p) localStorage.setItem(HS_KEY, String(v)); }catch{} }

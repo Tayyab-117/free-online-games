@@ -5,6 +5,7 @@ const HS_KEY='hs-balloons'; let cannon, balls, grid=[], colors=[0xff6b6b,0x8be9f
 function preload(){}
 
 function create(){
+  window.__scene = this;
   const g=this.add.graphics();
   // top cluster
   for(const HS_KEY='hs-balloons'; let r=0;r<6;r++){
@@ -23,7 +24,7 @@ function create(){
   this.input.on('pointerdown',(p)=> shoot.call(this,p));
 
   updateHUD();
-  window.__pause = (force)=>{ paused = (force===true)? true : !paused; if(this && this.physics){ this.physics.world.isPaused = paused; } }; window.togglePause=()=>{ paused=!paused; };
+  window.__pause = (force)=>{ try{ paused = (force===true)? true : !paused; if(window.__scene && window.__scene.physics){ window.__scene.physics.world.isPaused = paused; } }catch(e){ console.warn('pause failed', e);} }; window.togglePause=()=>{ paused=!paused; };
   window.restart=()=>{ this.scene.restart(); score=0; };
   window.toggleSound=()=>{ musicOn=!musicOn; };
 }
@@ -83,7 +84,9 @@ function flood(r,c,color,seen=new Set()){
 
 function updateHUD(){ document.getElementById('score').textContent='Score: '+score; }
 
-new Phaser.Game(config);
+window._game && window._game.destroy(true);
+window._game = new Phaser.Game(config);
+window.addEventListener('beforeunload', ()=>{ try{ window._game && window._game.destroy(true); }catch{} });
 
 function getHS(){ try{ return parseInt(localStorage.getItem(HS_KEY)||'0',10);}catch{return 0;} }
 function setHS(v){ try{ const p=getHS(); if(v>p) localStorage.setItem(HS_KEY, String(v)); }catch{} }

@@ -21,16 +21,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className="text-slate-100">
         <a href="#main" className="sr-only focus:not-sr-only">Skip to content</a>
-        
         <Suspense fallback={<div className="h-14" />}>
-          <Header />
+        <Header/>
         </Suspense>
-
-        <main id="main" className="mx-auto max-w-6xl px-4 py-6">
-          {children}
-        </main>
-        
-        <Footer />
+        <main id="main" className="mx-auto max-w-6xl px-4 py-6">{children}</main>
+        <Footer/>
       </body>
     </html>
   );

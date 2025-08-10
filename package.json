@@ -8,7 +8,6 @@
     "start": "next start",
     "lint": "next lint",
     "vercel-build": "NEXT_TELEMETRY_DISABLED=1 NEXT_DISABLE_ESLINT=1 next build"
-
   },
   "dependencies": {
     "next": "14.2.5",
@@ -25,5 +24,8 @@
     "@types/node": "20.14.10",
     "@types/react": "18.2.73",
     "@types/react-dom": "18.2.24"
+  },
+  "engines": {
+    "node": ">=18.17.0"
   }
 }

@@ -5,6 +5,7 @@ const HS_KEY='hs-racer'; let car, cursors, obstacles, lap=0, totalTime=0, startL
 function preload(){}
 
 function create(){
+  window.__scene = this;
   const road=this.add.rectangle(W/2,H/2, W*0.6,H, 0x2a3570);
   car=this.physics.add.rectangle(W/2, H-60, 32, 48, 0xf39c12);
   car.body.setDrag(200); car.body.setMaxVelocity(300);
@@ -20,7 +21,7 @@ function create(){
 
   startLap=this.time.now;
   updateHUD();
-  window.__pause = (force)=>{ paused = (force===true)? true : !paused; if(this && this.physics){ this.physics.world.isPaused = paused; } }; window.togglePause=()=>{ paused=!paused; this.physics.world.isPaused=paused; };
+  window.__pause = (force)=>{ try{ paused = (force===true)? true : !paused; if(window.__scene && window.__scene.physics){ window.__scene.physics.world.isPaused = paused; } }catch(e){ console.warn('pause failed', e);} }; window.togglePause=()=>{ paused=!paused; this.physics.world.isPaused=paused; };
   window.restart=()=>{ this.scene.restart(); lap=0; totalTime=0; };
   window.toggleSound=()=>{};
 }
@@ -50,7 +51,9 @@ function update(time,delta){
 function crash(){ alert('Crashed! Laps: '+lap+' Total: '+totalTime.toFixed(2)+'s'); window.restart(); }
 function updateHUD(){ document.getElementById('score').textContent='Lap: '+lap+'  Total: '+totalTime.toFixed(2)+'s'; }
 
-new Phaser.Game(config);
+window._game && window._game.destroy(true);
+window._game = new Phaser.Game(config);
+window.addEventListener('beforeunload', ()=>{ try{ window._game && window._game.destroy(true); }catch{} });
 
 function getHS(){ try{ return parseInt(localStorage.getItem(HS_KEY)||'0',10);}catch{return 0;} }
 function setHS(v){ try{ const p=getHS(); if(v>p) localStorage.setItem(HS_KEY, String(v)); }catch{} }

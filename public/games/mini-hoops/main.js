@@ -5,6 +5,7 @@ const HS_KEY='hs-hoops'; let ball, rim, score=0, timeLeft=60, dragging=false, st
 function preload(){}
 
 function create(){
+  window.__scene = this;
   this.add.rectangle(W/2, H-20, W, 40, 0x0f1530);
   rim = this.physics.add.staticGroup();
   const back = this.add.rectangle(W/2+200,200,10,120,0xffffff); this.physics.add.existing(back,true);
@@ -31,7 +32,7 @@ function create(){
 
   timerEvt = this.time.addEvent({ delay:1000, loop:true, callback:()=>{ if(!paused){ timeLeft--; updateHUD(); if(timeLeft<=0) gameOver.call(this); } } });
   updateHUD();
-  window.__pause = (force)=>{ paused = (force===true)? true : !paused; if(this && this.physics){ this.physics.world.isPaused = paused; } }; window.togglePause=()=>{ paused=!paused; this.physics.world.isPaused=paused; };
+  window.__pause = (force)=>{ try{ paused = (force===true)? true : !paused; if(window.__scene && window.__scene.physics){ window.__scene.physics.world.isPaused = paused; } }catch(e){ console.warn('pause failed', e);} }; window.togglePause=()=>{ paused=!paused; this.physics.world.isPaused=paused; };
   window.restart=()=>{ this.scene.restart(); score=0; timeLeft=60; };
   window.toggleSound=()=>{};
 }
@@ -48,7 +49,9 @@ function gameOver(){ alert('Time up! Score: '+score); window.restart(); }
 
 function update(){}
 
-new Phaser.Game(config);
+window._game && window._game.destroy(true);
+window._game = new Phaser.Game(config);
+window.addEventListener('beforeunload', ()=>{ try{ window._game && window._game.destroy(true); }catch{} });
 
 function getHS(){ try{ return parseInt(localStorage.getItem(HS_KEY)||'0',10);}catch{return 0;} }
 function setHS(v){ try{ const p=getHS(); if(v>p) localStorage.setItem(HS_KEY, String(v)); }catch{} }
