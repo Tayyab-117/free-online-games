@@ -1,51 +1,33 @@
-"use client";
+import { byTrending, games, categories } from "@/lib/games";
+import Hero from "@/components/Hero";
+import GameCard from "@/components/GameCard";
 
-import { useParams } from "next/navigation";
-import Script from "next/script";
-import games from "@/data/games.json";
-
-export default function GamePage() {
-  const params = useParams();
-  const game = games.find((g) => g.slug === params.slug);
-
-  if (!game) {
-    return <div>Game not found.</div>;
-  }
-
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "VideoGame",
-    name: game.title,
-    description: game.description,
-    genre: game.genre,
-    inLanguage: "en"
-  };
-
+export default function Home({ searchParams }: { searchParams: { q?: string; c?: string } }) {
+  const q = (searchParams?.q ?? "").toLowerCase();
+  const c = searchParams?.c;
+  let list = games;
+  if (q) list = list.filter(g => g.title.toLowerCase().includes(q) || g.tags.some(t=>t.toLowerCase().includes(q)));
+  if (c && c !== "New") list = list.filter(g => g.category === c);
+  const feature = byTrending(1)[0];
   return (
     <div className="space-y-8">
-      {/* SEO JSON-LD Structured Data */}
-      <Script
-        type="application/ld+json"
-        id="game-jsonld"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-
-      {/* Game container */}
-      <div className="rounded-xl bg-panel overflow-hidden shadow-card">
-        <div className="relative w-full aspect-video">
-          <iframe
-            src={`/games/${params.slug}/index.html`}
-            className="w-full h-[80vh] border-none"
-            title={game.title}
-          ></iframe>
+      {feature && (
+        <Hero
+          title={feature.title}
+          cta="Play Now"
+          image={feature.hero || feature.thumb || "/og-cover.svg"}
+          href={`/game/${feature.slug}`}
+        />
+      )}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-2xl font-bold">New & Trending</h2>
+          <div className="text-sm text-slate-400">Categories: {categories.join(" • ")}</div>
         </div>
-      </div>
-
-      {/* Game description */}
-      <div className="bg-panel rounded-xl p-4 shadow-card">
-        <h1 className="text-2xl font-bold mb-2">{game.title}</h1>
-        <p className="text-slate-300">{game.description}</p>
-      </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          {list.map(g => <GameCard key={g.id} g={g}/>)}
+        </div>
+      </section>
     </div>
   );
 }

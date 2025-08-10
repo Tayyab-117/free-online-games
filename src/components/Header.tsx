@@ -2,8 +2,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { categories } from "@/lib/games";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function Header() {
   const router = useRouter();

@@ -9,5 +9,5 @@ export type Game = {
   thumb: string;
   hero?: string;
   tags: string[];
-  embed?: string; // iframe path under /games/...
+  embed?: string;
 };
