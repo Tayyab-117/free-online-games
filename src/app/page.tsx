@@ -1,50 +1,18 @@
-import { games, categories } from "@/lib/games";
-import Hero from "@/components/Hero";
-import GameCard from "@/components/GameCard";
+import Image from "next/image";
+import Link from "next/link";
+import { game } from "@/lib/game";
 
-export default function Home({
-  searchParams,
-}: {
-  searchParams: { q?: string; c?: string };
-}) {
-  const q = (searchParams?.q ?? "").toLowerCase();
-  const c = searchParams?.c;
-
-  let list = games;
-  if (q) {
-    list = list.filter(
-      (g) =>
-        g.title.toLowerCase().includes(q) ||
-        g.tags.some((t) => t.toLowerCase().includes(q))
-    );
-  }
-  if (c && c !== "New") list = list.filter((g) => g.category === c);
-
-  // Pick the first game as the "featured" hero
-  const feature = list.length > 0 ? list[0] : games[0];
-
+export default function Home(){
   return (
     <div className="space-y-8">
-      {/* Pass required props to Hero */}
-      <Hero
-        title={feature.title}
-        cta="Play Now"
-        image={feature.hero || feature.thumb || "/og-cover.svg"}
-        href={`/game/${feature.slug}`}
-      />
-
-      <section>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-2xl font-bold">New & Trending</h2>
-          <div className="text-sm text-slate-400">
-            Categories: {categories.join(" • ")}
-          </div>
+      <section className="rounded-xl bg-panel shadow overflow-hidden">
+        <div className="relative h-64">
+          <Image src={game.hero || game.thumb} alt={game.title} fill className="object-cover"/>
         </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {list.map((g) => (
-            <GameCard key={g.id} g={g} />
-          ))}
+        <div className="p-6 -mt-16 relative">
+          <h1 className="text-3xl font-extrabold text-white drop-shadow">{game.title}</h1>
+          <p className="mt-2 text-slate-300">{game.description}</p>
+          <Link href="/game/pixel-quest" className="inline-block mt-4 bg-accent text-black font-semibold px-5 py-2 rounded-xl hover:brightness-110">Play Now</Link>
         </div>
       </section>
     </div>
