@@ -1,67 +1,54 @@
-import { bySlug, related } from "@/lib/games";
+// src/app/game/[slug]/page.tsx
+import { notFound } from "next/navigation";
+import games from "@/lib/games";
+import type { Game } from "@/types";
 import Script from "next/script";
-import GameCard from "@/components/GameCard";
 
-type Props = { params: { slug: string } };
+export default function GamePage({ params }: { params: { slug: string } }) {
+  const g: Game | undefined = games.find((game) => game.slug === params.slug);
 
-export async function generateMetadata({ params }: Props) {
-  const g = bySlug(params.slug);
-  return {
-    title: g ? `${g.title} – Play Free Online` : "Game",
-    description: g?.description ?? "",
-    openGraph: { images: [g?.thumb ?? "/og-cover.svg"] }
-  };
-}
-
-export default function GamePage({ params }: Props) {
-  const g = bySlug(params.slug);
-  if (!g) return <div className="py-24 text-center">Game not found.</div>;
-  const rel = related(g.slug, 6);
+  if (!g) {
+    return notFound();
+  }
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "VideoGame",
     name: g.title,
     description: g.description,
-    genre: g.category,
+    genre: g.category || "Arcade", // Resilient fallback
     operatingSystem: "Web Browser",
     applicationCategory: "Game",
     playMode: "SinglePlayer",
-    applicationSubCategory: "HTML5 Game",
+    image: g.hero || g.thumb,
+    url: `https://freegames.example.com/game/${g.slug}`,
     inLanguage: "en",
-    thumbnailUrl: g.thumb,
-    image: g.hero ?? g.thumb,
-    url: `https://freegames.example.com/game/${g.slug}`
   };
 
   return (
     <div className="space-y-8">
-      <Script type="application/ld+json" id="game-jsonld" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <Script
+        type="application/ld+json"
+        id="game-jsonld"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="rounded-xl bg-panel overflow-hidden shadow-card">
         <div className="relative w-full aspect-video">
           <iframe
             src={g.embed}
-            title={g.title}
-            loading="lazy"
-            allow="autoplay; fullscreen; gamepad; clipboard-write"
-            referrerPolicy="no-referrer"
             className="absolute inset-0 w-full h-full border-0"
+            allowFullScreen
+            title={g.title}
           />
         </div>
-        <div className="p-4 text-slate-300 text-sm">
-          <h1 className="text-2xl font-bold text-white">{g.title}</h1>
-          <p className="mt-2">{g.description}</p>
-          <p className="mt-2">Category: {g.category}</p>
-        </div>
       </div>
-      {rel.length > 0 && (
-        <section>
-          <h2 className="text-2xl font-bold mb-3">Related games</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-            {rel.map(r => <GameCard key={r.id} g={r}/>)}
-          </div>
-        </section>
-      )}
+      <div>
+        <h1 className="text-3xl font-bold">{g.title}</h1>
+        <p className="mt-2 text-lg text-slate-300">{g.description}</p>
+        {g.category && (
+          <p className="mt-1 text-sm text-slate-400">Category: {g.category}</p>
+        )}
+      </div>
     </div>
   );
 }
