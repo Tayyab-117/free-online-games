@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root { color-scheme: dark; }
+html, body { height: 100%; background: #0f1530; }
+@media (prefers-reduced-motion: no-preference){
+  .hover-zoom{ transition: transform .18s ease; }
+  .hover-zoom:hover{ transform: translateY(-2px) scale(1.02); }
+}
