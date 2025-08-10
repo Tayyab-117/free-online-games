@@ -20,10 +20,18 @@ export default function Home({
   }
   if (c && c !== "New") list = list.filter((g) => g.category === c);
 
+  // Pick the first game as the "featured" hero
+  const feature = list.length > 0 ? list[0] : games[0];
+
   return (
     <div className="space-y-8">
-      {/* Rotating hero; takes no props */}
-      <Hero />
+      {/* Pass required props to Hero */}
+      <Hero
+        title={feature.title}
+        cta="Play Now"
+        image={feature.hero || feature.thumb || "/og-cover.svg"}
+        href={`/game/${feature.slug}`}
+      />
 
       <section>
         <div className="flex items-center justify-between mb-3">
